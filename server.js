@@ -24,12 +24,18 @@ const CODE_MAX_AGE_MS = 5 * 60 * 1000; // Codes older than 5 minutes are ignored
 // ─── Load Accounts ──────────────────────────────────────────────────────────
 
 function loadAccounts() {
-  if (!fs.existsSync(ACCOUNTS_FILE)) {
-    console.error(`❌ ${ACCOUNTS_FILE} not found! Create it with account JSON lines.`);
+  let content = '';
+
+  // Check environment variable first (for cloud deployment like Render)
+  if (process.env.ACCOUNTS_DATA) {
+    console.log('📦 Loading accounts from ACCOUNTS_DATA environment variable...');
+    content = process.env.ACCOUNTS_DATA;
+  } else if (fs.existsSync(ACCOUNTS_FILE)) {
+    content = fs.readFileSync(ACCOUNTS_FILE, 'utf-8');
+  } else {
+    console.error(`❌ No accounts found! Set ACCOUNTS_DATA env var or create ${ACCOUNTS_FILE}`);
     return [];
   }
-
-  const content = fs.readFileSync(ACCOUNTS_FILE, 'utf-8');
   const accounts = [];
 
   // Split into entries — handles JSON objects (possibly multi-line)
